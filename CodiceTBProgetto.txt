@@ -1,0 +1,42 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+entity TB is
+end TB; -- non essendoci interfaccia reale, la entity risulta vuota
+
+Architecture Sim of TB is
+
+-- dichiaro le componenti per l'UUT (UNIT UNDER TEST)
+
+component CarrySelect16bit_r8_fa8
+port(A, B: in STD_LOGIC_VECTOR((n-1) downto);
+Cin : in STD_LOGIC;
+S : out STD_LOGIC_VECTOR ((n-1) downto 0);
+Cout : out STD_LOGIC);
+end component;
+
+--Inputs
+signal IA : std_logic_vector((n-1) downto 0) := (others => '0');
+signal IB : std_logic_vector((n-1) downto 0) := (others => '0');
+signal ICin : std_logic := '0';
+ 
+--Outputs
+signal OS : std_logic_vector((n-1) downto 0);
+signal OCout : std_logic;
+signal TrueRis, Error:integer;
+
+begin
+circ: CarrySelect16bit_r8_fa8 port map(IA, IB, ICin, OS, OCout);
+Icin <= '0';
+process
+begin
+for va in -(2**(n-1)) to (2**(n-1)-1) loop
+        IA<=conv_std_logic_vector(va,n);
+        for vb in -(2**(n-1)) to (2**(n-1)-1) loop          
+            IB<=conv_std_logic_vector(vb,n);
+            TrueRis<=va+vb;
+            wait for 10ns;
+        end loop;
+    end loop;
+  end process;
+Error<=TrueRis-conv_integer(signed(OS));
+end Sim;

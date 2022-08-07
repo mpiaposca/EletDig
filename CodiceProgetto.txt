@@ -1,0 +1,102 @@
+---------Mux
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+-- MUX 2:1
+
+entity MUX is
+Port ( I1, I2, Sel : in STD_LOGIC;
+       Dout : out STD_LOGIC);
+end MUX;
+
+architecture Behavioral of MUX is
+begin
+-- Scrittura identica alla seguente
+--      Dout <= I1 when Sel='0' else
+--              I2 when Sel='1' else 'X';
+-- è quella adoperata di seguito
+  with Sel select
+  Dout <= I1 when '0',
+          I2 when '1',
+          'X' when others;
+
+end Behavioral;
+
+------Ripple Carry
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity MyRippleCarry is
+generic (n:integer := 8); ------------------------------- nota valore di default
+Port ( A : in STD_LOGIC_VECTOR ((n-1) downto 0);
+B : in STD_LOGIC_VECTOR ((n-1) downto 0);
+Cin : in STD_LOGIC;
+S : out STD_LOGIC_VECTOR ((n-1) downto 0);
+Cout : out STD_LOGIC);
+end MyRippleCarry;
+ 
+architecture Behavioral of MyRippleCarry is
+
+
+component FullAdder 
+Port ( A, B, Cin : in STD_LOGIC;
+           S, Cout : out STD_LOGIC);
+end component;
+
+-- segnali intermedi di connessione tra full adder
+signal carry: STD_LOGIC_VECTOR(n-1 downto 1);
+begin
+MyFor: for i in 0 to n generate
+    MyIfN: if i = n generate 
+        FA_N: FullAdder port map (A(n-1), B(n-1), carry(n-1), S(n-1), Cout);
+    end generate;
+    MyIfO: if i<n generate
+        FA_O: FullAdder port map(A(i), B(i), carry(i), S(i), carry(i+1);
+    end generate;
+end generate;
+carry(0) <= Cin;
+end Behavioral;
+---------------------------------------CARRY SELECT
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity CarrySelect16bit_r8_fa8 is
+generic(n:integer := 16);
+
+Port(A, B: in STD_LOGIC_VECTOR((n-1) downto);
+Cin : in STD_LOGIC;
+S : out STD_LOGIC_VECTOR ((n-1) downto 0);
+Cout : out STD_LOGIC);
+end CarrySelect16bit_r8_fa8;
+
+architecture Behavioral of CarrySelect16bit_r8_fa8 is
+
+component MUX
+Port ( I1, I2, Sel : in STD_LOGIC;
+       Dout : out STD_LOGIC);
+end component;
+
+component MyRippleCarry is
+generic (n:integer := 8); ------------------------------- nota valore di default
+Port ( A, B : in STD_LOGIC_VECTOR ((n-1) downto 0);
+Cin : in STD_LOGIC;
+S : out STD_LOGIC_VECTOR ((n-1) downto 0);
+Cout : out STD_LOGIC);
+end MyRippleCarry;
+
+signal RCout: STD_LOGIC;
+signal X,Y,P0,P1: STD_LOGIC_VECTOR((n-1) downto 0);
+
+begin
+MyFor: for i in n down to 0 generate
+MyIf: if i < 8 generate
+	RC_3: MyRippleCarry port map(A(i), B(i), Cin, S(i), RCout))
+MyIf2: if i < 16 generate
+	RC_0: MyRippleCarry port map(A(i), B(i), '0', X(i), P0(i));
+	RC_1: MyRippleCarry port map(A(i), B(i), '1', Y(i), P1(i));
+	MUX_N: MyMux port map(X(i), Y(i), RCout, S(i));
+MyIf3: if i = 16 generate
+	MUX_END: MyMux port map(C0(i-1), C1(i-1), RCout, Cout);
+end Behavioral;
+
+
